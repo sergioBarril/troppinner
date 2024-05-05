@@ -5,6 +5,7 @@ import path from "path";
 import { Command } from "../interfaces/command";
 import { Event } from "../interfaces/event";
 import { Button } from "../interfaces/button";
+import { ContextMenu } from "../interfaces/context-menu";
 
 /**
  * Get all the commands in the commands folder
@@ -35,6 +36,37 @@ export function loadCommands() {
     .map((module) => module.default);
 
   return commands;
+}
+
+/**
+ * Get all the context menus in the context-menus folder
+ * @returns An array of context menu functions
+ */
+export function loadContextMenus() {
+  const contextMenuPath = path.join(__dirname, "..", "context-menus");
+  const contextMenuFolders = readdirSync(contextMenuPath);
+
+  const contextMenuUrls: string[] = [];
+
+  for (const folder of contextMenuFolders) {
+    const folderPath = path.join(contextMenuPath, folder);
+
+    const contextMenuFiles = readdirSync(folderPath).filter(
+      (file) => file.endsWith(".context.ts") || file.endsWith(".context.js"),
+    );
+
+    for (const file of contextMenuFiles) {
+      const filePath = path.join(folderPath, file);
+      contextMenuUrls.push(filePath);
+    }
+  }
+
+  const contextMenus: ContextMenu[] = contextMenuUrls
+    .map((commandPath) => require(commandPath))
+    .flat()
+    .map((module) => module.default);
+
+  return contextMenus;
 }
 
 /**

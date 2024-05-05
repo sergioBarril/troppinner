@@ -7,6 +7,7 @@ import { readdirSync } from "node:fs";
 
 import { Command } from "../interfaces/command";
 import logger from "../config/logger";
+import { loadContextMenus } from "../config/startup";
 
 // Get ENV variables
 const { CLIENT_ID, GUILD_ID, DISCORD_TOKEN } = process.env;
@@ -44,16 +45,24 @@ const commands = commandList
   .filter((command) => command.data && command.execute)
   .map((command) => command.data.toJSON());
 
+// Load context menus
+const contextMenus = loadContextMenus()
+  .filter((contextMenu) => contextMenu.data && contextMenu.execute)
+  .map((contextMenu) => contextMenu.data.toJSON());
+
 // Construct and prepare an instance of the REST module
 const rest = new REST().setToken(DISCORD_TOKEN);
 
 // and deploy your commands!
 logger.info(`Started refreshing ${commands.length} application (/) commands.`);
+logger.info(
+  `Started refreshing ${contextMenus.length} application (/) context menus.`,
+);
 
 // The put method is used to fully refresh all commands in the guild with the current set
 rest
   .put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
-    body: commands,
+    body: [...commands, ...contextMenus],
   })
   .then((data: any) =>
     logger.info(

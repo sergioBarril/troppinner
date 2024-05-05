@@ -3,6 +3,7 @@ import {
   ChatInputCommandInteraction,
   Events,
   Interaction,
+  MessageContextMenuCommandInteraction,
 } from "discord.js";
 import CustomClient from "../config/custom-client";
 import { Event } from "../interfaces/event";
@@ -10,7 +11,18 @@ import ApiError from "../errors/api-error.error";
 import logger from "../config/logger";
 
 async function errorHandler(interaction: Interaction, error: Error) {
-  if (!interaction.isChatInputCommand() && !interaction.isButton()) return;
+  const isAcceptedInteraction =
+    interaction.isChatInputCommand() ||
+    interaction.isButton() ||
+    interaction.isMessageContextMenuCommand();
+
+  if (!isAcceptedInteraction) {
+    logger.error(
+      error,
+      `An interaction of type ${interaction.type} was not handled by the error handler.`,
+    );
+    return;
+  }
 
   let content = "There was an error while executing this command!";
   if (error instanceof ApiError && error.statusCode < 500) {
@@ -19,10 +31,14 @@ async function errorHandler(interaction: Interaction, error: Error) {
   } else logger.error(error);
 
   const response = { content, ephemeral: true };
-  if (interaction.replied || interaction.deferred) {
-    await interaction.followUp(response);
-  } else {
-    await interaction.reply(response);
+  try {
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp(response);
+    } else {
+      await interaction.reply(response);
+    }
+  } catch (err) {
+    logger.error(err, "An error occurred while sending an error response.");
   }
 }
 
@@ -51,9 +67,26 @@ async function buttonHandler(interaction: ButtonInteraction) {
   await button.execute(interaction);
 }
 
+async function contextMenuHandler(
+  interaction: MessageContextMenuCommandInteraction,
+) {
+  const contextMenu = (interaction.client as CustomClient).contextMenus.get(
+    interaction.commandName,
+  );
+
+  if (!contextMenu)
+    throw new Error(
+      `No context menu command matching ${interaction.commandName} was found.`,
+    );
+
+  await contextMenu.execute(interaction);
+}
+
 async function execute(interaction: Interaction) {
   try {
     if (interaction.isButton()) await buttonHandler(interaction);
+    else if (interaction.isMessageContextMenuCommand())
+      await contextMenuHandler(interaction);
     else if (interaction.isChatInputCommand())
       await commandHandler(interaction);
   } catch (error) {
