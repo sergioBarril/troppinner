@@ -4,3 +4,5 @@ dist/
 build/
 
 .env
+
+src/**/database/dev

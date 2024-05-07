@@ -10,20 +10,24 @@
     "start": "npm run build && node build/index.js | npx pino-pretty",
     "start:dev": "npx tsx watch ./src/index.ts | npx pino-pretty",
     "check:types": "tsc --noEmit",
-    "deploy:commands": "npm run build && node build/scripts/deploy-commands.js"
+    "deploy:commands": "npm run build && node build/scripts/deploy-commands.js",
+    "drizzle:studio": "npx drizzle-kit studio"
   },
   "author": "Tropped",
   "license": "ISC",
   "dependencies": {
+    "@libsql/client": "0.6.0",
     "axios": "1.6.8",
     "discord.js": "14.15.1",
     "dotenv": "16.4.5",
+    "drizzle-orm": "0.30.10",
     "pino": "9.0.0"
   },
   "devDependencies": {
     "@types/node": "20.12.8",
     "@typescript-eslint/eslint-plugin": "6.5.0",
     "@typescript-eslint/parser": "6.5.0",
+    "drizzle-kit": "0.20.18",
     "eslint": "8.56.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-airbnb-typescript": "17.1.0",
