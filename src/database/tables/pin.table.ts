@@ -11,13 +11,14 @@ export const pinTable = sqliteTable("pin", {
   pinnedAt: integer("pinned_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
+  pinnedBy: text("pinned_by").notNull(),
   authorId: text("author").notNull(),
   channelId: text("channel").notNull(),
   content: text("content").notNull(),
   guildId: text("guild_id")
     .references(() => guildTable.id)
     .notNull(),
-  createdTimestamp: integer("created_timestamp", {
+  createdAt: integer("created_at", {
     mode: "timestamp",
   }).notNull(),
 });

@@ -26,6 +26,22 @@ export async function findGuild(guildId: string) {
 }
 
 /**
+ * Find a guild by Discord ID
+ *
+ * @param discordId Guild Discord ID
+ * @returns The guild, or null if not found
+ */
+export async function findGuildByDiscordId(discordId: string) {
+  const rows = await db
+    .select()
+    .from(guildTable)
+    .where(sql`${guildTable.discordId} = ${discordId}`)
+    .execute();
+
+  return rows[0] || null;
+}
+
+/**
  * Create a new guild
  *
  * @param newGuild New guild data
