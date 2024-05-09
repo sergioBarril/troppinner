@@ -55,10 +55,9 @@ export async function findPinByMessageId(messageId: string) {
  * Create a new pin
  *
  * @param newPin New pin data
- * @returns
  */
 export async function createPin(newPin: InferInsertModel<typeof pinTable>) {
   const rows = await db.insert(pinTable).values(newPin).returning();
 
-  return rows[0];
+  return rows[0]!;
 }

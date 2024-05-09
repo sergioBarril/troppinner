@@ -12,16 +12,16 @@ import { createPin, findPinByMessageId } from "../../services/pin.service";
 import DuplicatePinError from "../../errors/duplicate-pin.error";
 import GuildChannelError from "../../errors/guild-channel.error";
 import PinChannelNotFoundError from "../../errors/pins-channel-not-found.error";
+import { addPinAttachment } from "../../services/pin-attachment.service";
 
 const data = new ContextMenuCommandBuilder()
   .setName("Pin Message")
   .setType(ApplicationCommandType.Message);
 
 async function execute(interaction: MessageContextMenuCommandInteraction) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply();
 
   // Get the guild
-
   if (!interaction.inCachedGuild()) {
     logger.error(interaction, "Interaction is not in a guild");
     throw new Error("Interaction is not in a guild");
@@ -58,8 +58,10 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   }
 
   // Send the clone message to the pins channel
-  const { createdAt, author, content } = targetMessage;
+  const { createdAt, author, content, attachments } = targetMessage;
   const pinnerId = interaction.user.id;
+
+  const attachmentArray = Array.from(attachments.values());
 
   let cloneContent = `👤 ${userMention(author.id)}\n`;
   cloneContent += `📌 ${userMention(pinnerId)}\n`;
@@ -67,6 +69,7 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
 
   const clonedMessage = await pinsChannel.send({
     content: cloneContent,
+    files: attachmentArray,
     flags: "SuppressEmbeds",
   });
 
@@ -83,9 +86,20 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
     pinnedBy: pinnerId,
   });
 
-  logger.info({ pin, clonedMessage }, "Message pinned");
+  logger.info({ pin }, "Message pinned");
 
-  await interaction.editReply("Message pinned");
+  // Store the attachments
+  await Promise.all(
+    attachmentArray.map(({ url }) =>
+      addPinAttachment({ pinId: pin.id, attachmentUrl: url }),
+    ),
+  ).catch((error) => {
+    logger.error(error, "Error storing attachment");
+  });
+
+  await interaction.editReply({
+    content: `Message pinned: ${clonedMessage.url}`,
+  });
 }
 
 const ping: ContextMenu = {
