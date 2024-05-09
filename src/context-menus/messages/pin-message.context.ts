@@ -2,6 +2,7 @@ import {
   ApplicationCommandType,
   ContextMenuCommandBuilder,
   MessageContextMenuCommandInteraction,
+  userMention,
 } from "discord.js";
 import { ContextMenu } from "../../interfaces/context-menu";
 import { findGuildByDiscordId } from "../../services/guild.service";
@@ -57,12 +58,19 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   }
 
   // Send the clone message to the pins channel
+  const { createdAt, author, content } = targetMessage;
+  const pinnerId = interaction.user.id;
+
+  let cloneContent = `👤 ${userMention(author.id)}\n`;
+  cloneContent += `📌 ${userMention(pinnerId)}\n`;
+  cloneContent += `📨 ${targetMessage.url}:\n\n${content}`;
+
   const clonedMessage = await pinsChannel.send({
-    content: targetMessage.content,
+    content: cloneContent,
+    flags: "SuppressEmbeds",
   });
 
   // Prepare the pin data
-  const { createdAt, author, content } = targetMessage;
 
   const pin = await createPin({
     guildId: guild.id,
@@ -72,7 +80,7 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
     authorId: author.id,
     messageId: targetId,
     discordId: clonedMessage.id,
-    pinnedBy: interaction.user.id,
+    pinnedBy: pinnerId,
   });
 
   logger.info({ pin, clonedMessage }, "Message pinned");
