@@ -3,6 +3,8 @@ import {
   ContextMenuCommandBuilder,
   MessageContextMenuCommandInteraction,
   userMention,
+  time,
+  TimestampStyles,
 } from "discord.js";
 import { ContextMenu } from "../../interfaces/context-menu";
 import { findGuildByDiscordId } from "../../services/guild.service";
@@ -64,8 +66,9 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   const attachmentArray = Array.from(attachments.values());
 
   let cloneContent = `👤 ${userMention(author.id)}\n`;
+  cloneContent += `🕒 ${time(createdAt, TimestampStyles.ShortDateTime)}\n`;
   cloneContent += `📌 ${userMention(pinnerId)}\n`;
-  cloneContent += `📨 ${targetMessage.url}:\n\n${content}`;
+  cloneContent += `📨 ${targetMessage.url}\n\n${content}`;
 
   const clonedMessage = await pinsChannel.send({
     content: cloneContent,
