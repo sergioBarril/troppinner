@@ -64,6 +64,10 @@ export default class PinService {
 
     return rows[0]!;
   }
+
+  async deletePin(pinId: string) {
+    await this.db.delete(pinTable).where(sql`${pinTable.id} = ${pinId}`);
+  }
 }
 
 export const pinService = new PinService(database);

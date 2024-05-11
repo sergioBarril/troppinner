@@ -30,6 +30,16 @@ export default class PinAttachmentService {
 
     return rows[0];
   }
+
+  /**
+   * Delete a pin attachment
+   */
+  async deletePinAttachments(pinId: string) {
+    await this.db
+      .delete(pinAttachmentTable)
+      .where(sql`${pinAttachmentTable.pinId} = ${pinId}`)
+      .execute();
+  }
 }
 
 export const pinAttachmentService = new PinAttachmentService(database);
