@@ -18,6 +18,7 @@ import GuildChannelError from "../../errors/guild-channel.error";
 import PinChannelNotFoundError from "../../errors/pins-channel-not-found.error";
 import { pinAttachmentService } from "../../services/pin-attachment.service";
 import database from "../../database";
+import { getDiscordGuild } from "../utils/context-menu.utils";
 
 const guildService = new GuildService(database);
 
@@ -28,13 +29,8 @@ const data = new ContextMenuCommandBuilder()
 async function execute(interaction: MessageContextMenuCommandInteraction) {
   await interaction.deferReply();
 
-  // Get the guild
-  if (!interaction.inCachedGuild()) {
-    logger.error(interaction, "Interaction is not in a guild");
-    throw new Error("Interaction is not in a guild");
-  }
-
-  const { guildId, targetId, targetMessage } = interaction;
+  const discordGuild = getDiscordGuild(interaction);
+  const guildId = discordGuild.id;
 
   const guild = await guildService.findGuildByDiscordId(guildId);
 
@@ -49,6 +45,7 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   }
 
   // Check if the message is already pinned
+  const { targetId, targetMessage } = interaction;
   const oldPin = await pinService.findPinByMessageId(targetId);
 
   if (oldPin) {
@@ -57,7 +54,7 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   }
 
   // Get the channel for pinned messages
-  const pinsChannel = await interaction.guild.channels.fetch(guild.channelId);
+  const pinsChannel = await discordGuild.channels.fetch(guild.channelId);
 
   if (!pinsChannel || !pinsChannel.isTextBased()) {
     logger.error(guild, "Pins channel not found");
