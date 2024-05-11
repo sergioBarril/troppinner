@@ -5,6 +5,7 @@ import {
   userMention,
   time,
   TimestampStyles,
+  Message,
 } from "discord.js";
 import { ContextMenu } from "../../interfaces/context-menu";
 
@@ -25,6 +26,39 @@ const data = new ContextMenuCommandBuilder()
   .setName("Pin Message")
   .setType(ApplicationCommandType.Message);
 
+function prepareCloneMessage(pinnerId: string, targetMessage: Message) {
+  const { createdAt, author, content, attachments } = targetMessage;
+
+  const attachmentArray = Array.from(attachments.values());
+
+  let cloneContent = `👤 ${userMention(author.id)}\n`;
+  cloneContent += `🕒 ${time(createdAt, TimestampStyles.ShortDateTime)}\n`;
+  cloneContent += `📌 ${userMention(pinnerId)}\n`;
+  cloneContent += `📨 ${targetMessage.url}\n\n${content}`;
+
+  return {
+    content: cloneContent,
+    files: attachmentArray,
+    flags: "SuppressEmbeds" as const,
+  };
+}
+
+async function storeAttachments(attachments: string[], pinId: string) {
+  return Promise.all(
+    attachments.map((url) =>
+      pinAttachmentService.addPinAttachment({
+        pinId,
+        attachmentUrl: url,
+      }),
+    ),
+  ).catch((error) => {
+    logger.error(error, "Error storing attachment");
+  });
+}
+
+/**
+ * Pin a message to the pins channel
+ */
 async function execute(interaction: MessageContextMenuCommandInteraction) {
   await interaction.deferReply();
 
@@ -55,24 +89,13 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   }
 
   // Send the clone message to the pins channel
-  const { createdAt, author, content, attachments, channelId } = targetMessage;
   const pinnerId = interaction.user.id;
-
-  const attachmentArray = Array.from(attachments.values());
-
-  let cloneContent = `👤 ${userMention(author.id)}\n`;
-  cloneContent += `🕒 ${time(createdAt, TimestampStyles.ShortDateTime)}\n`;
-  cloneContent += `📌 ${userMention(pinnerId)}\n`;
-  cloneContent += `📨 ${targetMessage.url}\n\n${content}`;
-
-  const clonedMessage = await pinsChannel.send({
-    content: cloneContent,
-    files: attachmentArray,
-    flags: "SuppressEmbeds",
-  });
+  const clonedMessage = await pinsChannel.send(
+    prepareCloneMessage(pinnerId, targetMessage),
+  );
 
   // Prepare the pin data
-
+  const { createdAt, author, content, channelId } = targetMessage;
   const pin = await pinService.createPin({
     guildId: guild.id,
     createdAt,
@@ -88,16 +111,10 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   logger.info({ pin }, "Message pinned");
 
   // Store the attachments
-  await Promise.all(
-    attachmentArray.map(({ url }) =>
-      pinAttachmentService.addPinAttachment({
-        pinId: pin.id,
-        attachmentUrl: url,
-      }),
-    ),
-  ).catch((error) => {
-    logger.error(error, "Error storing attachment");
-  });
+  const attachmentUrls = targetMessage.attachments.map(
+    (attachment) => attachment.url,
+  );
+  await storeAttachments(attachmentUrls, pin.id);
 
   await interaction.editReply({
     content: `Message pinned: ${clonedMessage.url}`,
