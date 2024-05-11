@@ -13,4 +13,10 @@ const client = createClient({
 
 const database = drizzle(client, { schema });
 
+type DrizzleConnection = typeof database;
+
+export type DrizzleTransaction =
+  | DrizzleConnection
+  | Parameters<Parameters<DrizzleConnection["transaction"]>[0]>[0];
+
 export default database;
