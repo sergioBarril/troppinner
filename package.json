@@ -10,7 +10,7 @@
     "start": "npm run build && node build/index.js | npx pino-pretty",
     "start:dev": "npx tsx watch ./src/index.ts | npx pino-pretty",
     "check:types": "tsc --noEmit",
-    "deploy:commands": "npm run build && node build/scripts/deploy-commands.js",
+    "deploy:commands": "npm run build && node build/src/scripts/deploy-commands.js",
     "drizzle:studio": "npx drizzle-kit studio",
     "db:seed-guild": "npx tsx ./src/scripts/seed-guild.ts"
   },
@@ -29,7 +29,7 @@
     "@types/node": "20.12.8",
     "@typescript-eslint/eslint-plugin": "6.5.0",
     "@typescript-eslint/parser": "6.5.0",
-    "drizzle-kit": "0.20.18",
+    "drizzle-kit": "^0.21.1",
     "eslint": "8.56.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-airbnb-typescript": "17.1.0",
