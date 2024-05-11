@@ -7,14 +7,19 @@ import {
   TimestampStyles,
 } from "discord.js";
 import { ContextMenu } from "../../interfaces/context-menu";
-import { findGuildByDiscordId } from "../../services/guild.service";
+
+import GuildService from "../../services/guild.service";
+
 import logger from "../../config/logger";
 import GuildNotFoundError from "../../errors/guild-not-found.error";
-import { createPin, findPinByMessageId } from "../../services/pin.service";
+import { pinService } from "../../services/pin.service";
 import DuplicatePinError from "../../errors/duplicate-pin.error";
 import GuildChannelError from "../../errors/guild-channel.error";
 import PinChannelNotFoundError from "../../errors/pins-channel-not-found.error";
-import { addPinAttachment } from "../../services/pin-attachment.service";
+import { pinAttachmentService } from "../../services/pin-attachment.service";
+import database from "../../database";
+
+const guildService = new GuildService(database);
 
 const data = new ContextMenuCommandBuilder()
   .setName("Pin Message")
@@ -31,7 +36,7 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
 
   const { guildId, targetId, targetMessage } = interaction;
 
-  const guild = await findGuildByDiscordId(guildId);
+  const guild = await guildService.findGuildByDiscordId(guildId);
 
   if (!guild) {
     logger.error(interaction, "Guild not found");
@@ -44,7 +49,7 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   }
 
   // Check if the message is already pinned
-  const oldPin = await findPinByMessageId(targetId);
+  const oldPin = await pinService.findPinByMessageId(targetId);
 
   if (oldPin) {
     logger.warn({ interaction, oldPin }, "Pin already exists");
@@ -60,7 +65,7 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   }
 
   // Send the clone message to the pins channel
-  const { createdAt, author, content, attachments } = targetMessage;
+  const { createdAt, author, content, attachments, channelId } = targetMessage;
   const pinnerId = interaction.user.id;
 
   const attachmentArray = Array.from(attachments.values());
@@ -78,11 +83,12 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
 
   // Prepare the pin data
 
-  const pin = await createPin({
+  const pin = await pinService.createPin({
     guildId: guild.id,
     createdAt,
     content,
-    channelId: guild.channelId,
+    channelId,
+    pinChannelId: guild.channelId,
     authorId: author.id,
     messageId: targetId,
     discordId: clonedMessage.id,
@@ -94,7 +100,10 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   // Store the attachments
   await Promise.all(
     attachmentArray.map(({ url }) =>
-      addPinAttachment({ pinId: pin.id, attachmentUrl: url }),
+      pinAttachmentService.addPinAttachment({
+        pinId: pin.id,
+        attachmentUrl: url,
+      }),
     ),
   ).catch((error) => {
     logger.error(error, "Error storing attachment");
