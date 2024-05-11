@@ -114,9 +114,9 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   });
 }
 
-const ping: ContextMenu = {
+const pinMessage: ContextMenu = {
   data,
   execute,
 };
 
-export default ping;
+export default pinMessage;

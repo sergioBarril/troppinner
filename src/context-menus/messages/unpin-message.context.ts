@@ -5,7 +5,6 @@ import {
 } from "discord.js";
 import { ContextMenu } from "../../interfaces/context-menu";
 
-import { guildService } from "../../services/guild.service";
 import PinAttachmentService from "../../services/pin-attachment.service";
 import PinService, { pinService } from "../../services/pin.service";
 
@@ -13,10 +12,9 @@ import database from "../../database";
 
 import logger from "../../config/logger";
 
-import GuildNotFoundError from "../../errors/guild-not-found.error";
-import GuildChannelError from "../../errors/guild-channel.error";
 import PinChannelNotFoundError from "../../errors/pins-channel-not-found.error";
 import PinNotFoundError from "../../errors/pin-not-found.error";
+import { getDiscordGuild } from "../utils/context-menu.utils";
 
 const data = new ContextMenuCommandBuilder()
   .setName("Unpin Message")
@@ -25,27 +23,8 @@ const data = new ContextMenuCommandBuilder()
 async function execute(interaction: MessageContextMenuCommandInteraction) {
   await interaction.deferReply({ ephemeral: true });
 
-  // Get the guild
-  if (!interaction.inCachedGuild()) {
-    logger.error(interaction, "Interaction is not in a guild");
-    throw new Error("Interaction is not in a guild");
-  }
-
-  const { guildId, targetId } = interaction;
-
-  const guild = await guildService.findGuildByDiscordId(guildId);
-
-  if (!guild) {
-    logger.error(interaction, "Guild not found");
-    throw new GuildNotFoundError(guildId);
-  }
-
-  if (!guild.channelId) {
-    logger.error(guild, "Guild channel not assigned");
-    throw new GuildChannelError();
-  }
-
-  // Check if the message is already pinned
+  // Check if the message is pinned
+  const { targetId } = interaction;
   const oldPinByMessage = await pinService.findPinByMessageId(targetId);
   const oldPinByDiscord = await pinService.findPinByDiscordId(targetId);
 
@@ -57,9 +36,8 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   }
 
   // Get the channel that the message was pinned to
-  const pinsChannel = await interaction.guild.channels.fetch(
-    oldPin.pinChannelId,
-  );
+  const discordGuild = getDiscordGuild(interaction);
+  const pinsChannel = await discordGuild.channels.fetch(oldPin.pinChannelId);
 
   if (!pinsChannel || !pinsChannel.isTextBased()) {
     logger.error({ oldPin }, "Pins channel not found");
@@ -96,9 +74,9 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   });
 }
 
-const ping: ContextMenu = {
+const unpinMessage: ContextMenu = {
   data,
   execute,
 };
 
-export default ping;
+export default unpinMessage;

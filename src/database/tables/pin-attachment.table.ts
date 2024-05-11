@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { text, sqliteTable, primaryKey } from "drizzle-orm/sqlite-core";
 import { pinTable } from "./pin.table";
 

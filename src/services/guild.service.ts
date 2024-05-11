@@ -2,6 +2,7 @@ import { sql, type InferInsertModel } from "drizzle-orm";
 import type { DrizzleTransaction } from "../database";
 import { guildTable } from "../database/tables";
 import database from "../database";
+import GuildNotFoundError from "../errors/guild-not-found.error";
 
 export default class GuildService {
   constructor(private readonly db: DrizzleTransaction) {}
@@ -43,6 +44,22 @@ export default class GuildService {
       .execute();
 
     return rows[0] || null;
+  }
+
+  /**
+   * Get a guild by Discord ID
+   *
+   * @param discordId - Discord ID of the guild
+   * @throws {GuildNotFoundError} If the guild is not found
+   */
+  async getGuildByDiscordId(discordId: string) {
+    const guild = await this.findGuildByDiscordId(discordId);
+
+    if (!guild) {
+      throw new GuildNotFoundError(discordId);
+    }
+
+    return guild;
   }
 
   /**

@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { randomUUID } from "crypto";
 import { text, sqliteTable, integer } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
