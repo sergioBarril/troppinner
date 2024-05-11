@@ -56,12 +56,14 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
     throw new PinNotFoundError(targetId);
   }
 
-  // Get the channel for pinned messages
-  const pinsChannel = await interaction.guild.channels.fetch(guild.channelId);
+  // Get the channel that the message was pinned to
+  const pinsChannel = await interaction.guild.channels.fetch(
+    oldPin.pinChannelId,
+  );
 
   if (!pinsChannel || !pinsChannel.isTextBased()) {
-    logger.error(guild, "Pins channel not found");
-    throw new PinChannelNotFoundError(guild.channelId);
+    logger.error({ oldPin }, "Pins channel not found");
+    throw new PinChannelNotFoundError(oldPin.pinChannelId);
   }
 
   // Fetch and delete cloned message
