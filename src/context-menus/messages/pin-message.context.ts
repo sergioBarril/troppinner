@@ -22,6 +22,8 @@ import { getDiscordGuild } from "../utils/context-menu.utils";
 
 const guildService = new GuildService(database);
 
+const MAX_PINNED_MESSAGES = 50;
+
 const data = new ContextMenuCommandBuilder()
   .setName("Pin Message")
   .setType(ApplicationCommandType.Message);
@@ -54,6 +56,23 @@ async function storeAttachments(attachments: string[], pinId: string) {
   ).catch((error) => {
     logger.error(error, "Error storing attachment");
   });
+}
+
+async function pinMessage(targetMessage: Message<boolean>) {
+  const { channel, pinnable, pinned } = targetMessage;
+  const channelPins = await channel.messages.fetchPinned();
+
+  const shouldBePinned =
+    channelPins.size < MAX_PINNED_MESSAGES && pinnable && !pinned;
+
+  if (shouldBePinned) {
+    await targetMessage.pin();
+    logger.info({ targetMessage }, "Message truly pinned");
+  } else {
+    logger.warn({ targetMessage }, "Message not pinned");
+  }
+
+  return shouldBePinned;
 }
 
 /**
@@ -116,14 +135,17 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   );
   await storeAttachments(attachmentUrls, pin.id);
 
+  // Pin message for real
+  await pinMessage(targetMessage);
+
   await interaction.editReply({
     content: `Message pinned: ${clonedMessage.url}`,
   });
 }
 
-const pinMessage: ContextMenu = {
+const pinMessageCM: ContextMenu = {
   data,
   execute,
 };
 
-export default pinMessage;
+export default pinMessageCM;
