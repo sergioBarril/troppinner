@@ -23,7 +23,7 @@ const data = new ContextMenuCommandBuilder()
   .setType(ApplicationCommandType.Message);
 
 async function execute(interaction: MessageContextMenuCommandInteraction) {
-  await interaction.deferReply();
+  await interaction.deferReply({ ephemeral: true });
 
   // Get the guild
   if (!interaction.inCachedGuild()) {
@@ -46,7 +46,10 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   }
 
   // Check if the message is already pinned
-  const oldPin = await pinService.findPinByMessageId(targetId);
+  const oldPinByMessage = await pinService.findPinByMessageId(targetId);
+  const oldPinByDiscord = await pinService.findPinByDiscordId(targetId);
+
+  const oldPin = oldPinByMessage || oldPinByDiscord;
 
   if (!oldPin) {
     logger.warn({ targetId }, "The message isn't pinned");
@@ -62,7 +65,9 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   }
 
   // Fetch and delete cloned message
-  const clonedMessage = await pinsChannel.messages.fetch(oldPin.discordId);
+  const clonedMessage = await pinsChannel.messages
+    .fetch(oldPin.discordId)
+    .catch((error) => logger.warn(error, "Failed to fetch pinned message"));
 
   // Delete the pin
   const transactionResult = await database.transaction(async (tx) => {
@@ -72,7 +77,7 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
     try {
       await txPinAttachmentService.deletePinAttachments(oldPin.id);
       await txPinService.deletePin(oldPin.id);
-      await clonedMessage.delete();
+      await clonedMessage?.delete();
 
       logger.info({ oldPin }, "Message unpinned");
       return true;
