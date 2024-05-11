@@ -65,7 +65,7 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   }
 
   // Send the clone message to the pins channel
-  const { createdAt, author, content, attachments } = targetMessage;
+  const { createdAt, author, content, attachments, channelId } = targetMessage;
   const pinnerId = interaction.user.id;
 
   const attachmentArray = Array.from(attachments.values());
@@ -87,7 +87,8 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
     guildId: guild.id,
     createdAt,
     content,
-    channelId: guild.channelId,
+    channelId,
+    pinChannelId: guild.channelId,
     authorId: author.id,
     messageId: targetId,
     discordId: clonedMessage.id,
