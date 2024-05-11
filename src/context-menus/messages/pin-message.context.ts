@@ -11,7 +11,6 @@ import { ContextMenu } from "../../interfaces/context-menu";
 import GuildService from "../../services/guild.service";
 
 import logger from "../../config/logger";
-import GuildNotFoundError from "../../errors/guild-not-found.error";
 import { pinService } from "../../services/pin.service";
 import DuplicatePinError from "../../errors/duplicate-pin.error";
 import GuildChannelError from "../../errors/guild-channel.error";
@@ -32,13 +31,7 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   const discordGuild = getDiscordGuild(interaction);
   const guildId = discordGuild.id;
 
-  const guild = await guildService.findGuildByDiscordId(guildId);
-
-  if (!guild) {
-    logger.error(interaction, "Guild not found");
-    throw new GuildNotFoundError(guildId);
-  }
-
+  const guild = await guildService.getGuildByDiscordId(guildId);
   if (!guild.channelId) {
     logger.error(guild, "Guild channel not assigned");
     throw new GuildChannelError();
