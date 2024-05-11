@@ -79,7 +79,7 @@ async function pinMessage(targetMessage: Message<boolean>) {
  * Pin a message to the pins channel
  */
 async function execute(interaction: MessageContextMenuCommandInteraction) {
-  await interaction.deferReply();
+  await interaction.deferReply({ ephemeral: true });
 
   const discordGuild = getDiscordGuild(interaction);
   const guildId = discordGuild.id;
@@ -90,8 +90,17 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
     throw new GuildChannelError();
   }
 
-  // Check if the message is already pinned
+  // Check if the message is from pinned channel
   const { targetId, targetMessage } = interaction;
+
+  if (guild.channelId === targetMessage.channelId) {
+    logger.error({ interaction, targetMessage }, "Message already pinned");
+    interaction.editReply({
+      content: "Can't pin a message from the pins channel.",
+    });
+    return;
+  }
+
   const oldPin = await pinService.findPinByMessageId(targetId);
 
   if (oldPin) {
