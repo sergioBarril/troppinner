@@ -1,6 +1,7 @@
 import {
   ApplicationCommandType,
   ContextMenuCommandBuilder,
+  Guild,
   MessageContextMenuCommandInteraction,
 } from "discord.js";
 import { ContextMenu } from "../../interfaces/context-menu";
@@ -12,7 +13,6 @@ import database from "../../database";
 
 import logger from "../../config/logger";
 
-import PinChannelNotFoundError from "../../errors/pins-channel-not-found.error";
 import PinNotFoundError from "../../errors/pin-not-found.error";
 import { getDiscordGuild } from "../utils/context-menu.utils";
 
@@ -20,34 +20,64 @@ const data = new ContextMenuCommandBuilder()
   .setName("Unpin Message")
   .setType(ApplicationCommandType.Message);
 
+async function getPin(targetId: string) {
+  const pinByMessage = await pinService.findPinByMessageId(targetId);
+  const pinByDiscord = await pinService.findPinByDiscordId(targetId);
+
+  const pin = pinByMessage || pinByDiscord;
+
+  if (!pin) {
+    logger.error({ targetId }, "The message isn't pinned");
+    throw new PinNotFoundError(targetId);
+  }
+
+  return pin;
+}
+
+async function deleteCloneMessage(
+  discordGuild: Guild,
+  pinnedMessageId: string,
+  pinChannelId: string,
+) {
+  // Get the channel that the message was pinned to
+  const pinsChannel = await discordGuild.channels.fetch(pinChannelId);
+
+  if (!pinsChannel?.isTextBased()) {
+    logger.error(
+      { discordGuild: discordGuild.id, pinChannelId },
+      "Pins channel not found",
+    );
+
+    return false;
+  }
+
+  // Fetch and delete cloned message
+  const clonedMessage = await pinsChannel.messages
+    .fetch(pinnedMessageId)
+    .catch((error) => logger.warn(error, "Failed to fetch pinned message"));
+  await clonedMessage?.delete();
+
+  return true;
+}
+
 async function execute(interaction: MessageContextMenuCommandInteraction) {
   await interaction.deferReply({ ephemeral: true });
 
   // Check if the message is pinned
   const { targetId } = interaction;
-  const oldPinByMessage = await pinService.findPinByMessageId(targetId);
-  const oldPinByDiscord = await pinService.findPinByDiscordId(targetId);
+  const pin = await getPin(targetId);
 
-  const oldPin = oldPinByMessage || oldPinByDiscord;
-
-  if (!oldPin) {
-    logger.warn({ targetId }, "The message isn't pinned");
-    throw new PinNotFoundError(targetId);
-  }
-
-  // Get the channel that the message was pinned to
   const discordGuild = getDiscordGuild(interaction);
-  const pinsChannel = await discordGuild.channels.fetch(oldPin.pinChannelId);
 
-  if (!pinsChannel || !pinsChannel.isTextBased()) {
-    logger.error({ oldPin }, "Pins channel not found");
-    throw new PinChannelNotFoundError(oldPin.pinChannelId);
+  if (pin.pinChannelId) {
+    await deleteCloneMessage(
+      discordGuild,
+      pin.discordId,
+      pin.pinChannelId,
+    ).catch((error) => {
+      logger.error(error, "Failed to delete cloned message");
+    });
   }
-
-  // Fetch and delete cloned message
-  const clonedMessage = await pinsChannel.messages
-    .fetch(oldPin.discordId)
-    .catch((error) => logger.warn(error, "Failed to fetch pinned message"));
 
   // Delete the pin
   const transactionResult = await database.transaction(async (tx) => {
@@ -55,11 +85,10 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
     const txPinAttachmentService = new PinAttachmentService(tx);
 
     try {
-      await txPinAttachmentService.deletePinAttachments(oldPin.id);
-      await txPinService.deletePin(oldPin.id);
-      await clonedMessage?.delete();
+      await txPinAttachmentService.deletePinAttachments(pin.id);
+      await txPinService.deletePin(pin.id);
 
-      logger.info({ oldPin }, "Message unpinned");
+      logger.info({ oldPin: pin }, "Message unpinned");
       return true;
     } catch (error) {
       logger.error(error, "Failed to unpin message");
@@ -69,21 +98,19 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
 
   // Unpin the message
   const getOriginalMessage = async () => {
-    if (targetId === oldPin.messageId) return interaction.targetMessage;
+    if (targetId === pin.messageId) return interaction.targetMessage;
 
-    const originalChannel = await discordGuild.channels.fetch(oldPin.channelId);
+    const originalChannel = await discordGuild.channels.fetch(pin.channelId);
     if (!originalChannel?.isTextBased()) return null;
 
-    const originalMessage = await originalChannel.messages.fetch(
-      oldPin.messageId,
-    );
+    const originalMessage = await originalChannel.messages.fetch(pin.messageId);
     return originalMessage;
   };
 
   const originalMessage = await getOriginalMessage();
   await originalMessage?.unpin().catch(() => {});
 
-  logger.info({ transactionResult, oldPin }, "Message unpinned");
+  logger.info({ transactionResult, oldPin: pin }, "Message unpinned");
 
   await interaction.editReply({
     content: `Message unpinned.`,

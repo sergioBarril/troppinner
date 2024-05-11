@@ -10,7 +10,7 @@ export const pinTable = sqliteTable("pin", {
   pinnedAt: integer("pinned_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
-  pinChannelId: text("pin_channel_id").notNull(),
+  pinChannelId: text("pin_channel_id"),
   pinnedBy: text("pinned_by").notNull(),
   authorId: text("author_id").notNull(),
   channelId: text("channel_id").notNull(),
