@@ -67,6 +67,8 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
     }
   });
 
+  // Unpin the message
+  await interaction.targetMessage.unpin();
   logger.info({ transactionResult, oldPin }, "Message unpinned");
 
   await interaction.editReply({
@@ -74,9 +76,9 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   });
 }
 
-const unpinMessage: ContextMenu = {
+const unpinMessageCM: ContextMenu = {
   data,
   execute,
 };
 
-export default unpinMessage;
+export default unpinMessageCM;
