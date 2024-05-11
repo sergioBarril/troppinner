@@ -68,7 +68,21 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   });
 
   // Unpin the message
-  await interaction.targetMessage.unpin();
+  const getOriginalMessage = async () => {
+    if (targetId === oldPin.messageId) return interaction.targetMessage;
+
+    const originalChannel = await discordGuild.channels.fetch(oldPin.channelId);
+    if (!originalChannel?.isTextBased()) return null;
+
+    const originalMessage = await originalChannel.messages.fetch(
+      oldPin.messageId,
+    );
+    return originalMessage;
+  };
+
+  const originalMessage = await getOriginalMessage();
+  await originalMessage?.unpin().catch(() => {});
+
   logger.info({ transactionResult, oldPin }, "Message unpinned");
 
   await interaction.editReply({
