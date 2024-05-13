@@ -17,8 +17,6 @@ import { pinService } from "../services/pin.service";
 import DuplicatePinError from "../errors/duplicate-pin.error";
 import PinChannelNotFoundError from "../errors/pins-channel-not-found.error";
 
-const MAX_PINNED_MESSAGES = 50;
-
 function pinButtons() {
   const upvoteButton = new ButtonBuilder()
     .setCustomId("upvote_pin")
@@ -72,19 +70,17 @@ async function storeAttachments(attachments: string[], pinId: string) {
 }
 
 async function pinMessage(targetMessage: Message<boolean>) {
-  const { channel, pinnable, pinned } = targetMessage;
-  const channelPins = await channel.messages.fetchPinned();
+  const { pinnable, pinned } = targetMessage;
 
-  const shouldBePinned =
-    channelPins.size < MAX_PINNED_MESSAGES && pinnable && !pinned;
+  const shouldBePinned = pinnable && !pinned;
 
   if (shouldBePinned) {
     await targetMessage.pin();
     logger.info({ targetMessage }, "Message truly pinned");
   } else if (!pinned) {
     logger.warn(
-      { currentPins: channelPins.size, targetMessage },
-      "Message not pinned",
+      { messageId: targetMessage.id, pinned, pinnable },
+      "Message not pinnable",
     );
   }
 
@@ -170,7 +166,12 @@ export async function handlePinMessage(
   await storeAttachments(attachmentUrls, pin.id);
 
   // Pin message for real
-  await pinMessage(targetMessage);
+  await pinMessage(targetMessage).catch((error) => {
+    logger.warn(
+      { targetMessage: targetMessage.id, error: error.message },
+      "Message could not be pinned for real",
+    );
+  });
 
   logger.info({ pin }, "Message pinned");
 
