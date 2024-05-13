@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import { ContextMenu } from "../../interfaces/context-menu";
 import { handlePinMessage } from "../../utils/pin.util";
+import logger from "../../config/logger";
 
 const data = new ContextMenuCommandBuilder()
   .setName("Pin Message")
@@ -16,10 +17,15 @@ const data = new ContextMenuCommandBuilder()
 async function execute(interaction: MessageContextMenuCommandInteraction) {
   await interaction.deferReply({ ephemeral: true });
 
-  const clonedMessage = await handlePinMessage(
-    interaction.user.id,
-    interaction.targetMessage,
+  const { user, targetMessage } = interaction;
+  const userId = user.id;
+
+  logger.info(
+    { userId, targetId: targetMessage.id },
+    "Pin message context menu interaction",
   );
+
+  const clonedMessage = await handlePinMessage(userId, targetMessage);
 
   await interaction.editReply({
     content: `Message pinned: ${clonedMessage.url}`,

@@ -64,6 +64,11 @@ async function deleteCloneMessage(
 async function execute(interaction: MessageContextMenuCommandInteraction) {
   await interaction.deferReply({ ephemeral: true });
 
+  logger.info(
+    { userId: interaction.user.id, targetId: interaction.targetId },
+    "Unpin message context menu interaction",
+  );
+
   // Check if the message is pinned
   const { targetId } = interaction;
   const pin = await getPin(targetId);
@@ -113,7 +118,10 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   const originalMessage = await getOriginalMessage();
   await originalMessage?.unpin().catch(() => {});
 
-  logger.info({ transactionResult, oldPin: pin }, "Message unpinned");
+  logger.info(
+    { transactionResult, oldPin: pin },
+    "Message unpin process complete successfully",
+  );
 
   await interaction.editReply({
     content: `Message unpinned.`,

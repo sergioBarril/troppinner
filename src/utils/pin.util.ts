@@ -105,7 +105,6 @@ export async function handlePinMessage(
   }
 
   // Check if the message is from pinned channel
-
   const { id: targetId } = targetMessage;
 
   if (guild.channelId === targetMessage.channelId) {
@@ -118,7 +117,7 @@ export async function handlePinMessage(
   const oldPin = await pinService.findPinByMessageId(targetId);
 
   if (oldPin) {
-    logger.warn({ oldPin }, "Pin already exists");
+    logger.warn({ oldPin }, "Pin already exists in the database");
     throw new DuplicatePinError();
   }
 
@@ -173,7 +172,7 @@ export async function handlePinMessage(
     );
   });
 
-  logger.info({ pin }, "Message pinned");
+  logger.info({ pin }, "Message pin process has been successful");
 
   return clonedMessage;
 }
