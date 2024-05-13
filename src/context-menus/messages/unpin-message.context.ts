@@ -15,6 +15,7 @@ import logger from "../../config/logger";
 
 import PinNotFoundError from "../../errors/pin-not-found.error";
 import { getDiscordGuild } from "../utils/context-menu.utils";
+import PinVoterService from "../../services/pin-voter.service";
 
 const data = new ContextMenuCommandBuilder()
   .setName("Unpin Message")
@@ -83,8 +84,10 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   const transactionResult = await database.transaction(async (tx) => {
     const txPinService = new PinService(tx);
     const txPinAttachmentService = new PinAttachmentService(tx);
+    const txPinVoterService = new PinVoterService(tx);
 
     try {
+      await txPinVoterService.deletePin(pin.id);
       await txPinAttachmentService.deletePinAttachments(pin.id);
       await txPinService.deletePin(pin.id);
 

@@ -80,6 +80,15 @@ export default class PinVoterService {
 
     return { upvotes: upvotes.length, downvotes: downvotes.length };
   }
+
+  /**
+   * Delete all votes for a pin
+   */
+  async deletePin(pinId: string) {
+    await this.db
+      .delete(pinVoterTable)
+      .where(sql`${pinVoterTable.pinId} = ${pinId}`);
+  }
 }
 
 export const pinVoterService = new PinVoterService(database);
