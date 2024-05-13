@@ -1,4 +1,12 @@
-import { Message, TimestampStyles, time, userMention } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  Message,
+  TimestampStyles,
+  time,
+  userMention,
+} from "discord.js";
 import { pinAttachmentService } from "../services/pin-attachment.service";
 
 import logger from "../config/logger";
@@ -10,6 +18,27 @@ import DuplicatePinError from "../errors/duplicate-pin.error";
 import PinChannelNotFoundError from "../errors/pins-channel-not-found.error";
 
 const MAX_PINNED_MESSAGES = 50;
+
+function pinButtons() {
+  const upvoteButton = new ButtonBuilder()
+    .setCustomId("upvote_pin")
+    .setLabel("Upvote")
+    .setEmoji("👍")
+    .setStyle(ButtonStyle.Success);
+
+  const downvoteButton = new ButtonBuilder()
+    .setCustomId("downvote_pin")
+    .setLabel("Downvote")
+    .setEmoji("👎")
+    .setStyle(ButtonStyle.Danger);
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents([
+    upvoteButton,
+    downvoteButton,
+  ]);
+
+  return row;
+}
 
 function prepareCloneMessage(pinnerId: string, targetMessage: Message) {
   const { createdAt, author, content, attachments } = targetMessage;
@@ -25,6 +54,7 @@ function prepareCloneMessage(pinnerId: string, targetMessage: Message) {
     content: cloneContent,
     files: attachmentArray,
     flags: "SuppressEmbeds" as const,
+    components: [pinButtons()],
   };
 }
 
