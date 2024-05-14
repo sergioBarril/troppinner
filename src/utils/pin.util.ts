@@ -43,7 +43,10 @@ function prepareCloneMessage(pinnerId: string, targetMessage: Message) {
 
   const attachmentArray = Array.from(attachments.values());
 
-  let cloneContent = `👤 ${userMention(author.id)}\n`;
+  const isHidelgor = author.id === "413394854920323104";
+  const personEmoji = isHidelgor ? "<:Hidel2:771494620944924673>" : "👤";
+
+  let cloneContent = `${personEmoji} ${userMention(author.id)}\n`;
   cloneContent += `🕒 ${time(createdAt, TimestampStyles.ShortDateTime)}\n`;
   cloneContent += `📌 ${userMention(pinnerId)}\n`;
   cloneContent += `📨 ${targetMessage.url}\n\n${content}`;
