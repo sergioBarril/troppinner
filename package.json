@@ -7,7 +7,7 @@
     "build": "rimraf ./build && tsc",
     "lint": "eslint . --ext .ts",
     "prettier-format": "prettier --config .prettierrc ./src/**/*.ts --write .",
-    "start": "npm run build && node build/index.js | npx pino-pretty",
+    "start": "npm run build && node build/src/index.js | npx pino-pretty",
     "start:dev": "npx tsx watch ./src/index.ts | npx pino-pretty",
     "check:types": "tsc --noEmit",
     "deploy:commands": "npm run build && node build/src/scripts/deploy-commands.js",
