@@ -38,13 +38,23 @@ function pinButtons() {
   return row;
 }
 
+const CUSTOM_EMOJIS: Record<string, string> = {
+  "413394854920323104": "<:Hidel2:771494620944924673>",
+  "115231418161954825": "<:hidel4:1190042676968558742>",
+  "392694973629464596": "<:dviciat:1228623380262031401>",
+  "82986687847731200": "<:Polliko:731503781782618113>",
+  "166952481044037635": "<:DVDPeek:1098680431471231076>",
+  "271443620425498628": "<:VilxsThinking:897845014204416030>",
+  "178131218586402816": "<:Setas_die:866989655470768138>",
+  "422729741468958721": "<:ElKamisxd:802996875820924939>",
+};
+
 function prepareCloneMessage(pinnerId: string, targetMessage: Message) {
   const { createdAt, author, content, attachments } = targetMessage;
 
   const attachmentArray = Array.from(attachments.values());
 
-  const isHidelgor = author.id === "413394854920323104";
-  const personEmoji = isHidelgor ? "<:Hidel2:771494620944924673>" : "👤";
+  const personEmoji = CUSTOM_EMOJIS[author.id] || "👤";
 
   let cloneContent = `${personEmoji} ${userMention(author.id)}\n`;
   cloneContent += `🕒 ${time(createdAt, TimestampStyles.ShortDateTime)}\n`;
