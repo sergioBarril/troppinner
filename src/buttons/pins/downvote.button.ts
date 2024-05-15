@@ -8,7 +8,7 @@ import { pinButtons, toggleVote } from "./voting.utils";
 export default {
   data: { name: "downvote_pin" },
   async execute(interaction: ButtonInteraction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferUpdate();
 
     const { message } = interaction;
 
@@ -27,9 +27,12 @@ export default {
     const { upvotes, downvotes } = await pinVoterService.getPinVotes(pin.id);
     const newButtons = pinButtons({ upvotes, downvotes });
 
-    const replyMessage = willBeDownvoted ? "Downvoted!" : "Downvote removed!";
+    if (!willBeDownvoted)
+      await interaction.followUp({
+        ephemeral: true,
+        content: `Downvote removed!`,
+      });
 
-    await interaction.editReply({ content: replyMessage });
-    await message.edit({ components: [newButtons] });
+    await interaction.editReply({ components: [newButtons] });
   },
 };
