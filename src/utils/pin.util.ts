@@ -178,7 +178,7 @@ export async function handlePinMessage(
   await storeAttachments(attachmentUrls, pin.id);
 
   // Pin message for real
-  await pinMessage(targetMessage).catch((error) => {
+  const pinnedForReal = await pinMessage(targetMessage).catch((error) => {
     logger.warn(
       { targetMessage: targetMessage.id, error: error.message },
       "Message could not be pinned for real",
@@ -187,5 +187,5 @@ export async function handlePinMessage(
 
   logger.info({ pin }, "Message pin process has been successful");
 
-  return clonedMessage;
+  return { pinnedForReal, clonedMessage };
 }

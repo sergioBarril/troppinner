@@ -2,6 +2,7 @@ import {
   ApplicationCommandType,
   ContextMenuCommandBuilder,
   MessageContextMenuCommandInteraction,
+  bold,
 } from "discord.js";
 import { ContextMenu } from "../../interfaces/context-menu";
 import { handlePinMessage } from "../../utils/pin.util";
@@ -25,11 +26,20 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
     "Pin message context menu interaction",
   );
 
-  const clonedMessage = await handlePinMessage(userId, targetMessage);
+  const { pinnedForReal, clonedMessage } = await handlePinMessage(
+    userId,
+    targetMessage,
+  );
 
   await interaction.editReply({
-    content: `Message pinned: ${clonedMessage.url}`,
+    content: `Message pinned.`,
   });
+
+  if (!pinnedForReal) {
+    await interaction.followUp({
+      content: `@${bold(user.displayName)} pinned a message: ${clonedMessage.url}`,
+    });
+  }
 }
 
 const pinMessageCM: ContextMenu = {
