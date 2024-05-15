@@ -16,7 +16,7 @@ export default {
 
     const userId = interaction.user.id;
 
-    if (pin.authorId === userId) {
+    if (pin.pinnedBy === userId) {
       interaction.followUp({
         ephemeral: true,
         content: `You can't upvote your own pin!`,
