@@ -36,9 +36,14 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   });
 
   if (!pinnedForReal) {
-    await interaction.followUp({
-      content: `@${bold(user.displayName)} pinned a message: ${clonedMessage.url}`,
-    });
+    await targetMessage
+      .reply({
+        content: `@${bold(user.displayName)} pinned this message: ${clonedMessage.url}`,
+        allowedMentions: { repliedUser: false },
+      })
+      .catch((error) => {
+        logger.error(error, "Failed to send message");
+      });
   }
 }
 

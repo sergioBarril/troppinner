@@ -3,6 +3,7 @@ import {
   ContextMenuCommandBuilder,
   Guild,
   MessageContextMenuCommandInteraction,
+  bold,
 } from "discord.js";
 import { ContextMenu } from "../../interfaces/context-menu";
 
@@ -115,8 +116,15 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
     return originalMessage;
   };
 
-  const originalMessage = await getOriginalMessage();
+  const originalMessage = await getOriginalMessage().catch(() => {});
   await originalMessage?.unpin().catch(() => {});
+
+  await originalMessage?.reply({
+    content: `@${bold(interaction.user.displayName)} unpinned this message.`,
+    allowedMentions: {
+      repliedUser: false,
+    },
+  });
 
   logger.info(
     { transactionResult, oldPin: pin },
