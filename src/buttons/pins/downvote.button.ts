@@ -15,14 +15,21 @@ export default {
     const pin = await pinService.findPinByDiscordId(message.id);
     if (!pin) throw new PinNotFoundError(message.id);
 
-    const existingVote = await pinVoterService.findPinVoter(
-      pin.id,
-      interaction.user.id,
-    );
+    const userId = interaction.user.id;
+
+    if (pin.authorId === userId) {
+      interaction.followUp({
+        ephemeral: true,
+        content: `You can't downvote your own pin!`,
+      });
+      return;
+    }
+
+    const existingVote = await pinVoterService.findPinVoter(pin.id, userId);
 
     const willBeDownvoted = existingVote?.vote !== -1;
 
-    await toggleVote(pin.id, interaction.user.id, -1, existingVote?.vote || 0);
+    await toggleVote(pin.id, userId, -1, existingVote?.vote || 0);
 
     const { upvotes, downvotes } = await pinVoterService.getPinVotes(pin.id);
     const newButtons = pinButtons({ upvotes, downvotes });
