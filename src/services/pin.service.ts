@@ -1,6 +1,8 @@
 import { sql, type InferInsertModel } from "drizzle-orm";
 import database, { DrizzleTransaction } from "../database";
 import { pinTable } from "../database/tables";
+import logger from "../config/logger";
+import PinNotFoundError from "../errors/pin-not-found.error";
 
 export default class PinService {
   constructor(private readonly db: DrizzleTransaction) {}
@@ -52,6 +54,20 @@ export default class PinService {
       .execute();
 
     return rows[0] || null;
+  }
+
+  async getPin(targetId: string) {
+    const pinByMessage = await this.findPinByMessageId(targetId);
+    const pinByDiscord = await this.findPinByDiscordId(targetId);
+
+    const pin = pinByMessage || pinByDiscord;
+
+    if (!pin) {
+      logger.error({ targetId }, "The message isn't pinned");
+      throw new PinNotFoundError(targetId);
+    }
+
+    return pin;
   }
 
   /**
