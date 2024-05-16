@@ -64,7 +64,6 @@ function prepareCloneMessage(pinnerId: string, targetMessage: Message) {
   return {
     content: cloneContent,
     files: attachmentArray,
-    flags: "SuppressEmbeds" as const,
     components: [pinButtons()],
   };
 }
