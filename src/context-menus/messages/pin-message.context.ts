@@ -26,25 +26,20 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
     "Pin message context menu interaction",
   );
 
-  const { pinnedForReal, clonedMessage } = await handlePinMessage(
-    userId,
-    targetMessage,
-  );
+  const { clonedMessage } = await handlePinMessage(userId, targetMessage);
 
   await interaction.editReply({
     content: `Message pinned.`,
   });
 
-  if (!pinnedForReal) {
-    await targetMessage
-      .reply({
-        content: `@${bold(user.displayName)} pinned this message: ${clonedMessage.url}`,
-        allowedMentions: { repliedUser: false },
-      })
-      .catch((error) => {
-        logger.error(error, "Failed to send message");
-      });
-  }
+  await targetMessage
+    .reply({
+      content: `@${bold(user.displayName)} pinned this message: ${clonedMessage.url}`,
+      allowedMentions: { repliedUser: false },
+    })
+    .catch((error) => {
+      logger.error(error, "Failed to send message");
+    });
 }
 
 const pinMessageCM: ContextMenu = {
