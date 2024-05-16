@@ -9,4 +9,5 @@ export const guildTable = sqliteTable("guild", {
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
+  maxDownvotes: integer("max_downvotes"),
 });
