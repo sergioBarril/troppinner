@@ -7,7 +7,7 @@ import { userTable } from "./user.table";
 export const pinTable = sqliteTable("pin", {
   id: text("id").primaryKey().$defaultFn(randomUUID),
   // Pin information
-  discordId: text("discord_id").notNull().unique(),
+  discordId: text("discord_id").unique(),
   pinnedAt: integer("pinned_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

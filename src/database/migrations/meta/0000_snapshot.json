@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "bbf40870-523b-401b-aa44-64c9786d5d12",
+  "id": "a5fd68a1-c315-447b-93d5-0396210ec4e0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guild": {
@@ -116,7 +116,7 @@
           "name": "discord_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "pinned_at": {

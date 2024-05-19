@@ -15,7 +15,7 @@ CREATE TABLE `pin_attachment` (
 --> statement-breakpoint
 CREATE TABLE `pin` (
 	`id` text PRIMARY KEY NOT NULL,
-	`discord_id` text NOT NULL,
+	`discord_id` text,
 	`pinned_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`pin_channel_id` text,
 	`pinned_by` text NOT NULL,
