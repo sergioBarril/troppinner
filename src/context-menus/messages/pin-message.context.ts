@@ -19,14 +19,17 @@ async function execute(interaction: MessageContextMenuCommandInteraction) {
   await interaction.deferReply({ ephemeral: true });
 
   const { user, targetMessage } = interaction;
-  const userId = user.id;
+  const userDiscordId = user.id;
 
   logger.info(
-    { userId, targetId: targetMessage.id },
+    { userDiscordId, targetId: targetMessage.id },
     "Pin message context menu interaction",
   );
 
-  const { clonedMessage } = await handlePinMessage(userId, targetMessage);
+  const { clonedMessage } = await handlePinMessage(
+    userDiscordId,
+    targetMessage,
+  );
 
   await interaction.editReply({
     content: `Message pinned.`,

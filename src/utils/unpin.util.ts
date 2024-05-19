@@ -1,9 +1,6 @@
 import { Guild, Message } from "discord.js";
 import logger from "../config/logger";
-import PinService, { pinService } from "../services/pin.service";
-import database from "../database";
-import PinAttachmentService from "../services/pin-attachment.service";
-import PinVoterService from "../services/pin-voter.service";
+import { pinService } from "../services/pin.service";
 
 async function deleteCloneMessage(
   discordGuild: Guild,
@@ -46,7 +43,11 @@ export async function handleUnpinMessage(targetMessage: Message<boolean>) {
   const discordGuild = targetMessage.guild;
 
   const pin = await pinService.getPin(targetId);
-  if (pin.pinChannelId) {
+
+  // Delete the pin
+  await pinService.deletePin(pin.id);
+
+  if (pin.pinChannelId && pin.discordId) {
     await deleteCloneMessage(
       discordGuild,
       pin.discordId,
@@ -55,25 +56,6 @@ export async function handleUnpinMessage(targetMessage: Message<boolean>) {
       logger.error(error, "Failed to delete cloned message");
     });
   }
-
-  // Delete the pin
-  await database.transaction(async (tx) => {
-    const txPinService = new PinService(tx);
-    const txPinAttachmentService = new PinAttachmentService(tx);
-    const txPinVoterService = new PinVoterService(tx);
-
-    try {
-      await txPinVoterService.deletePin(pin.id);
-      await txPinAttachmentService.deletePinAttachments(pin.id);
-      await txPinService.deletePin(pin.id);
-
-      logger.info({ oldPin: pin }, "Message unpinned");
-      return true;
-    } catch (error) {
-      logger.error(error, "Failed to unpin message");
-      throw error;
-    }
-  });
 
   // Unpin the message
   const getOriginalMessage = async () => {
