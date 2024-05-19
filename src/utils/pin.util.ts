@@ -16,6 +16,7 @@ import ApiError from "../errors/api-error.error";
 import { pinService } from "../services/pin.service";
 import DuplicatePinError from "../errors/duplicate-pin.error";
 import PinChannelNotFoundError from "../errors/pins-channel-not-found.error";
+import { userService } from "../services/user.service";
 
 function pinButtons() {
   const upvoteButton = new ButtonBuilder()
@@ -49,7 +50,7 @@ const CUSTOM_EMOJIS: Record<string, string> = {
   "422729741468958721": "<:ElKamisxd:802996875820924939>",
 };
 
-function prepareCloneMessage(pinnerId: string, targetMessage: Message) {
+function prepareCloneMessage(pinnerDiscordId: string, targetMessage: Message) {
   const { createdAt, author, content, attachments } = targetMessage;
 
   const attachmentArray = Array.from(attachments.values());
@@ -58,7 +59,7 @@ function prepareCloneMessage(pinnerId: string, targetMessage: Message) {
 
   let cloneContent = `${personEmoji} ${userMention(author.id)}\n`;
   cloneContent += `🕒 ${time(createdAt, TimestampStyles.ShortDateTime)}\n`;
-  cloneContent += `📌 ${userMention(pinnerId)}\n`;
+  cloneContent += `📌 ${userMention(pinnerDiscordId)}\n`;
   cloneContent += `📨 ${targetMessage.url}\n\n${content}`;
 
   return {
@@ -100,7 +101,7 @@ async function pinMessage(targetMessage: Message<boolean>) {
 }
 
 export async function handlePinMessage(
-  pinnerId: string,
+  pinnerDiscordId: string,
   targetMessage: Message<boolean>,
 ) {
   if (!targetMessage.inGuild()) {
@@ -108,7 +109,6 @@ export async function handlePinMessage(
   }
 
   const { guildId, guild: discordGuild } = targetMessage;
-
   const guild = await guildService.getGuildByDiscordId(guildId);
 
   if (!guild.channelId) {
@@ -127,15 +127,29 @@ export async function handlePinMessage(
   }
 
   const oldPin = await pinService.findPinByMessageId(targetId);
-
   if (oldPin) {
     logger.warn({ oldPin }, "Pin already exists in the database");
     throw new DuplicatePinError();
   }
 
+  // Prepare the pin data
+  const { createdAt, content, author, channelId } = targetMessage;
+  const pinnerUser = await userService.getOrCreateUser(pinnerDiscordId);
+  const authorUser = await userService.getOrCreateUser(author.id);
+
+  const pin = await pinService.createPin({
+    guildId: guild.id,
+    createdAt,
+    messageId: targetId,
+    content,
+    channelId,
+    pinChannelId: guild.channelId,
+    authorId: authorUser.id,
+    pinnedBy: pinnerUser.id,
+  });
+
   // Get the channel for pinned messages
   const pinsChannel = await discordGuild.channels.fetch(guild.channelId);
-
   if (!pinsChannel || !pinsChannel.isTextBased()) {
     logger.error(guild, "Pins channel not found");
     throw new PinChannelNotFoundError(guild.channelId);
@@ -143,10 +157,14 @@ export async function handlePinMessage(
 
   // Send the clone message to the pins channel
   const clonedMessage = await pinsChannel
-    .send(prepareCloneMessage(pinnerId, targetMessage))
+    .send(prepareCloneMessage(pinnerDiscordId, targetMessage))
     .catch((error) => {
       logger.error(
-        { targetMessage: targetMessage.id, pinnerId, error: error.message },
+        {
+          targetMessage: targetMessage.id,
+          pinnerId: pinnerDiscordId,
+          error: error.message,
+        },
         "Error sending cloned message",
       );
       throw new ApiError({
@@ -155,20 +173,8 @@ export async function handlePinMessage(
       });
     });
 
-  // Prepare the pin data
-  const { createdAt, author, content, channelId } = targetMessage;
-
-  const pin = await pinService.createPin({
-    guildId: guild.id,
-    createdAt,
-    content,
-    channelId,
-    pinChannelId: guild.channelId,
-    authorId: author.id,
-    messageId: targetId,
-    discordId: clonedMessage.id,
-    pinnedBy: pinnerId,
-  });
+  // Update the pin with the cloned message ID
+  await pinService.updatePin(pin.id, { discordId: clonedMessage.id });
 
   // Store the attachments
   const attachmentUrls = targetMessage.attachments.map(

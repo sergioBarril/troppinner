@@ -3,18 +3,20 @@ import { pinService } from "../../services/pin.service";
 import PinNotFoundError from "../../errors/pin-not-found.error";
 import { pinVoterService } from "../../services/pin-voter.service";
 import { pinButtons, toggleVote } from "./voting.utils";
+import { userService } from "../../services/user.service";
 
 export default {
   data: { name: "upvote_pin" },
   async execute(interaction: ButtonInteraction) {
     await interaction.deferUpdate();
 
-    const { message } = interaction;
+    const { message, user: discordUser } = interaction;
+    const userDiscordId = discordUser.id;
 
     const pin = await pinService.findPinByDiscordId(message.id);
     if (!pin) throw new PinNotFoundError(message.id);
 
-    const userId = interaction.user.id;
+    const { id: userId } = await userService.getOrCreateUser(userDiscordId);
 
     if (pin.pinnedBy === userId) {
       interaction.followUp({

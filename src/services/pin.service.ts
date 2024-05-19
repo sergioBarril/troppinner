@@ -84,6 +84,19 @@ export default class PinService {
   async deletePin(pinId: string) {
     await this.db.delete(pinTable).where(sql`${pinTable.id} = ${pinId}`);
   }
+
+  async updatePin(
+    pinId: string,
+    updatedPin: Partial<InferInsertModel<typeof pinTable>>,
+  ) {
+    const rows = await this.db
+      .update(pinTable)
+      .set(updatedPin)
+      .where(sql`${pinTable.id} = ${pinId}`)
+      .returning();
+
+    return rows[0]!;
+  }
 }
 
 export const pinService = new PinService(database);
