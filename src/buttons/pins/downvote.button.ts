@@ -8,6 +8,7 @@ import { guildService } from "../../services/guild.service";
 import GuildNotFoundError from "../../errors/guild-not-found.error";
 import { handleUnpinMessage } from "../../utils/unpin.util";
 import logger from "../../config/logger";
+import { userService } from "../../services/user.service";
 
 export default {
   data: { name: "downvote_pin" },
@@ -22,7 +23,8 @@ export default {
     const pin = await pinService.findPinByDiscordId(message.id);
     if (!pin) throw new PinNotFoundError(message.id);
 
-    const userId = interaction.user.id;
+    const userDiscordId = interaction.user.id;
+    const { id: userId } = await userService.getOrCreateUser(userDiscordId);
 
     if (pin.pinnedBy === userId) {
       interaction.followUp({
