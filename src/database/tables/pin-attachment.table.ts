@@ -5,7 +5,7 @@ export const pinAttachmentTable = sqliteTable(
   "pin_attachment",
   {
     pinId: text("pin_id")
-      .references(() => pinTable.id)
+      .references(() => pinTable.id, { onDelete: "cascade" })
       .notNull(),
     attachmentUrl: text("attachment_url").notNull(),
   },
