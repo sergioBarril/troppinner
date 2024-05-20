@@ -1,6 +1,6 @@
 import { ButtonInteraction } from "discord.js";
 import { pinService } from "../../services/pin.service";
-import { pinVoterService } from "../../services/pin-voter.service";
+import { pinVoteService } from "../../services/pin-voter.service";
 
 import PinNotFoundError from "../../errors/pin-not-found.error";
 import { pinButtons, toggleVote } from "./voting.utils";
@@ -34,13 +34,13 @@ export default {
       return;
     }
 
-    const existingVote = await pinVoterService.findPinVoter(pin.id, userId);
+    const existingVote = await pinVoteService.findPinVote(pin.id, userId);
 
     const willBeDownvoted = existingVote?.vote !== -1;
 
     await toggleVote(pin.id, userId, -1, existingVote?.vote || 0);
 
-    const { upvotes, downvotes } = await pinVoterService.getPinVotes(pin.id);
+    const { upvotes, downvotes } = await pinVoteService.getPinVotes(pin.id);
 
     const guildData = await guildService.findGuildByDiscordId(guild.id);
     if (!guildData) throw new GuildNotFoundError(guild.id);

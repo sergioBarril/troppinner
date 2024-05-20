@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "a5fd68a1-c315-447b-93d5-0396210ec4e0",
+  "id": "3b7eb21b-400a-45f6-942d-e6b73b53debc",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "guild": {
@@ -244,8 +244,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "pin_voter": {
-      "name": "pin_voter",
+    "pin_vote": {
+      "name": "pin_vote",
       "columns": {
         "pin_id": {
           "name": "pin_id",
@@ -271,9 +271,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "pin_voter_pin_id_pin_id_fk": {
-          "name": "pin_voter_pin_id_pin_id_fk",
-          "tableFrom": "pin_voter",
+        "pin_vote_pin_id_pin_id_fk": {
+          "name": "pin_vote_pin_id_pin_id_fk",
+          "tableFrom": "pin_vote",
           "tableTo": "pin",
           "columnsFrom": [
             "pin_id"
@@ -284,9 +284,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "pin_voter_user_id_user_id_fk": {
-          "name": "pin_voter_user_id_user_id_fk",
-          "tableFrom": "pin_voter",
+        "pin_vote_user_id_user_id_fk": {
+          "name": "pin_vote_user_id_user_id_fk",
+          "tableFrom": "pin_vote",
           "tableTo": "user",
           "columnsFrom": [
             "user_id"
@@ -299,12 +299,12 @@
         }
       },
       "compositePrimaryKeys": {
-        "pin_voter_pin_id_user_id_pk": {
+        "pin_vote_pin_id_user_id_pk": {
           "columns": [
             "pin_id",
             "user_id"
           ],
-          "name": "pin_voter_pin_id_user_id_pk"
+          "name": "pin_vote_pin_id_user_id_pk"
         }
       },
       "uniqueConstraints": {}

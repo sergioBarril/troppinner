@@ -1,19 +1,19 @@
 import { sql, type InferInsertModel } from "drizzle-orm";
 import database, { DrizzleTransaction } from "../database";
-import { pinVoterTable } from "../database/tables";
+import { pinVoteTable } from "../database/tables";
 
-export default class PinVoterService {
+export default class PinVoteService {
   constructor(private readonly db: DrizzleTransaction) {}
 
   /**
    * Find the vote for a pin
    */
-  async findPinVoter(pinId: string, userId: string) {
+  async findPinVote(pinId: string, userId: string) {
     const pinVoter = await this.db
       .select()
-      .from(pinVoterTable)
+      .from(pinVoteTable)
       .where(
-        sql`${pinVoterTable.pinId} = ${pinId} AND ${pinVoterTable.userId} = ${userId}`,
+        sql`${pinVoteTable.pinId} = ${pinId} AND ${pinVoteTable.userId} = ${userId}`,
       );
 
     return pinVoter[0] || null;
@@ -24,11 +24,8 @@ export default class PinVoterService {
    *
    * @param newVote New pin data
    */
-  async addPinVote(newVote: InferInsertModel<typeof pinVoterTable>) {
-    const rows = await this.db
-      .insert(pinVoterTable)
-      .values(newVote)
-      .returning();
+  async addPinVote(newVote: InferInsertModel<typeof pinVoteTable>) {
+    const rows = await this.db.insert(pinVoteTable).values(newVote).returning();
 
     return rows[0];
   }
@@ -38,9 +35,9 @@ export default class PinVoterService {
    */
   async deletePinVote(pinId: string, userId: string) {
     await this.db
-      .delete(pinVoterTable)
+      .delete(pinVoteTable)
       .where(
-        sql`${pinVoterTable.pinId} = ${pinId} AND ${pinVoterTable.userId} = ${userId}`,
+        sql`${pinVoteTable.pinId} = ${pinId} AND ${pinVoteTable.userId} = ${userId}`,
       )
       .execute();
   }
@@ -50,10 +47,10 @@ export default class PinVoterService {
    */
   async updatePinVote(pinId: string, userId: string, vote: number) {
     await this.db
-      .update(pinVoterTable)
+      .update(pinVoteTable)
       .set({ vote })
       .where(
-        sql`${pinVoterTable.pinId} = ${pinId} AND ${pinVoterTable.userId} = ${userId}`,
+        sql`${pinVoteTable.pinId} = ${pinId} AND ${pinVoteTable.userId} = ${userId}`,
       )
       .execute();
   }
@@ -64,17 +61,15 @@ export default class PinVoterService {
   async getPinVotes(pinId: string) {
     const upvotes = await this.db
       .select()
-      .from(pinVoterTable)
-      .where(
-        sql`${pinVoterTable.pinId} = ${pinId} AND ${pinVoterTable.vote} = 1`,
-      )
+      .from(pinVoteTable)
+      .where(sql`${pinVoteTable.pinId} = ${pinId} AND ${pinVoteTable.vote} = 1`)
       .execute();
 
     const downvotes = await this.db
       .select()
-      .from(pinVoterTable)
+      .from(pinVoteTable)
       .where(
-        sql`${pinVoterTable.pinId} = ${pinId} AND ${pinVoterTable.vote} = -1`,
+        sql`${pinVoteTable.pinId} = ${pinId} AND ${pinVoteTable.vote} = -1`,
       )
       .execute();
 
@@ -86,9 +81,9 @@ export default class PinVoterService {
    */
   async deletePin(pinId: string) {
     await this.db
-      .delete(pinVoterTable)
-      .where(sql`${pinVoterTable.pinId} = ${pinId}`);
+      .delete(pinVoteTable)
+      .where(sql`${pinVoteTable.pinId} = ${pinId}`);
   }
 }
 
-export const pinVoterService = new PinVoterService(database);
+export const pinVoteService = new PinVoteService(database);

@@ -1,7 +1,7 @@
 import { ButtonInteraction } from "discord.js";
 import { pinService } from "../../services/pin.service";
 import PinNotFoundError from "../../errors/pin-not-found.error";
-import { pinVoterService } from "../../services/pin-voter.service";
+import { pinVoteService } from "../../services/pin-voter.service";
 import { pinButtons, toggleVote } from "./voting.utils";
 import { userService } from "../../services/user.service";
 
@@ -26,13 +26,13 @@ export default {
       return;
     }
 
-    const existingVote = await pinVoterService.findPinVoter(pin.id, userId);
+    const existingVote = await pinVoteService.findPinVote(pin.id, userId);
 
     await toggleVote(pin.id, userId, +1, existingVote?.vote || 0);
 
     const willBeUpvoted = existingVote?.vote !== 1;
 
-    const { upvotes, downvotes } = await pinVoterService.getPinVotes(pin.id);
+    const { upvotes, downvotes } = await pinVoteService.getPinVotes(pin.id);
     const newButtons = pinButtons({ upvotes, downvotes });
 
     if (!willBeUpvoted)

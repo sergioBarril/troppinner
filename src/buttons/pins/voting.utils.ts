@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { pinVoterService } from "../../services/pin-voter.service";
+import { pinVoteService } from "../../services/pin-voter.service";
 
 type PinButtonsProps = {
   upvotes: number;
@@ -37,12 +37,12 @@ export async function toggleVote(
   existingVote: number,
 ) {
   if (!existingVote) {
-    return pinVoterService.addPinVote({ pinId, userId, vote });
+    return pinVoteService.addPinVote({ pinId, userId, vote });
   }
 
   if (existingVote === vote) {
-    return pinVoterService.deletePinVote(pinId, userId);
+    return pinVoteService.deletePinVote(pinId, userId);
   }
 
-  return pinVoterService.updatePinVote(pinId, userId, vote);
+  return pinVoteService.updatePinVote(pinId, userId, vote);
 }

@@ -30,7 +30,7 @@ CREATE TABLE `pin` (
 	FOREIGN KEY (`guild_id`) REFERENCES `guild`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `pin_voter` (
+CREATE TABLE `pin_vote` (
 	`pin_id` text NOT NULL,
 	`user_id` text NOT NULL,
 	`vote` integer NOT NULL,

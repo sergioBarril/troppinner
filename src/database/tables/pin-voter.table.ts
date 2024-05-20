@@ -7,8 +7,8 @@ import {
 import { pinTable } from "./pin.table";
 import { userTable } from "./user.table";
 
-export const pinVoterTable = sqliteTable(
-  "pin_voter",
+export const pinVoteTable = sqliteTable(
+  "pin_vote",
   {
     pinId: text("pin_id")
       .references(() => pinTable.id, { onDelete: "cascade" })
