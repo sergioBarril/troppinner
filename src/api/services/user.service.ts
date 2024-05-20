@@ -2,7 +2,7 @@ import { sql, type InferInsertModel } from "drizzle-orm";
 import type { DrizzleTransaction } from "../database";
 import { userTable } from "../database/tables";
 import database from "../database";
-import UserNotFoundError from "../../errors/user-not-found.error";
+import UserNotFoundError from "../../common/errors/user-not-found.error";
 
 export default class UserService {
   constructor(private readonly db: DrizzleTransaction) {}

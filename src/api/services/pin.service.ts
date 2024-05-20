@@ -2,7 +2,7 @@ import { sql, type InferInsertModel } from "drizzle-orm";
 import database, { DrizzleTransaction } from "../database";
 import { pinTable } from "../database/tables";
 import logger from "../../common/logger";
-import PinNotFoundError from "../../errors/pin-not-found.error";
+import PinNotFoundError from "../../common/errors/pin-not-found.error";
 
 export default class PinService {
   constructor(private readonly db: DrizzleTransaction) {}

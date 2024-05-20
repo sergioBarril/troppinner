@@ -1,6 +1,6 @@
 import { ButtonInteraction } from "discord.js";
 import { pinService } from "../../../api/services/pin.service";
-import PinNotFoundError from "../../../errors/pin-not-found.error";
+import PinNotFoundError from "../../../common/errors/pin-not-found.error";
 import { pinVoteService } from "../../../api/services/pin-voter.service";
 import { pinButtons, toggleVote } from "./voting.utils";
 import { userService } from "../../../api/services/user.service";

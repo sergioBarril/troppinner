@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import CustomClient from "../config/custom-client";
 import { Event } from "../interfaces/event";
-import ApiError from "../../errors/api-error.error";
+import ApiError from "../../common/errors/api-error.error";
 import logger from "../../common/logger";
 
 async function errorHandler(interaction: Interaction, error: Error) {

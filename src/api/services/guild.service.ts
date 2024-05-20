@@ -2,7 +2,7 @@ import { sql, type InferInsertModel } from "drizzle-orm";
 import type { DrizzleTransaction } from "../database";
 import { guildTable } from "../database/tables";
 import database from "../database";
-import GuildNotFoundError from "../../errors/guild-not-found.error";
+import GuildNotFoundError from "../../common/errors/guild-not-found.error";
 
 export default class GuildService {
   constructor(private readonly db: DrizzleTransaction) {}

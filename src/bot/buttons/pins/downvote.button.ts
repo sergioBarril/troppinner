@@ -2,10 +2,10 @@ import { ButtonInteraction } from "discord.js";
 import { pinService } from "../../../api/services/pin.service";
 import { pinVoteService } from "../../../api/services/pin-voter.service";
 
-import PinNotFoundError from "../../../errors/pin-not-found.error";
+import PinNotFoundError from "../../../common/errors/pin-not-found.error";
 import { pinButtons, toggleVote } from "./voting.utils";
 import { guildService } from "../../../api/services/guild.service";
-import GuildNotFoundError from "../../../errors/guild-not-found.error";
+import GuildNotFoundError from "../../../common/errors/guild-not-found.error";
 import { handleUnpinMessage } from "../../utils/unpin.util";
 import logger from "../../../common/logger";
 import { userService } from "../../../api/services/user.service";
