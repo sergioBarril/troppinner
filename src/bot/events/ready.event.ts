@@ -2,7 +2,7 @@ import { Events } from "discord.js";
 
 import CustomClient from "../config/custom-client";
 import { Event } from "../interfaces/event";
-import logger from "../config/logger";
+import logger from "../../common/logger";
 
 const onReady: Event = {
   name: Events.ClientReady,

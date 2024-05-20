@@ -1,6 +1,6 @@
 import { Guild, Message } from "discord.js";
-import logger from "../config/logger";
-import { pinService } from "../services/pin.service";
+import logger from "../../common/logger";
+import { pinService } from "../../api/services/pin.service";
 
 async function deleteCloneMessage(
   discordGuild: Guild,

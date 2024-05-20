@@ -1,5 +1,5 @@
 import { MessageContextMenuCommandInteraction } from "discord.js";
-import logger from "../../config/logger";
+import logger from "../../../common/logger";
 
 export function getDiscordGuild(
   interaction: MessageContextMenuCommandInteraction,

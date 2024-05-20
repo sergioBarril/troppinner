@@ -1,13 +1,13 @@
-import { guildService } from "../services/guild.service";
+import { guildService } from "../api/services/guild.service";
 
-import guilds from "../database/dev/dump2/guild.json";
-import pins from "../database/dev/dump2/pin.json";
-import pinAttachments from "../database/dev/dump2/pin_attachment.json";
-import pinVotes from "../database/dev/dump2/pin_voter.json";
-import { userService } from "../services/user.service";
-import { pinService } from "../services/pin.service";
-import { pinAttachmentService } from "../services/pin-attachment.service";
-import { pinVoteService } from "../services/pin-voter.service";
+import guilds from "../api/database/dev/dump2/guild.json";
+import pins from "../api/database/dev/dump2/pin.json";
+import pinAttachments from "../api/database/dev/dump2/pin_attachment.json";
+import pinVotes from "../api/database/dev/dump2/pin_voter.json";
+import { userService } from "../api/services/user.service";
+import { pinService } from "../api/services/pin.service";
+import { pinAttachmentService } from "../api/services/pin-attachment.service";
+import { pinVoteService } from "../api/services/pin-voter.service";
 
 function parseDate(date: number) {
   return new Date(date * 1000);

@@ -1,6 +1,6 @@
 import { Events, TextBasedChannel } from "discord.js";
 import { Event } from "../interfaces/event";
-import logger from "../config/logger";
+import logger from "../../common/logger";
 
 async function execute(channel: TextBasedChannel, timestamp: any) {
   logger.info(

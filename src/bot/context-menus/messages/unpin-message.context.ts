@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import { ContextMenu } from "../../interfaces/context-menu";
 
-import logger from "../../config/logger";
+import logger from "../../../common/logger";
 
 import { handleUnpinMessage } from "../../utils/unpin.util";
 

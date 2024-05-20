@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { pinVoteService } from "../../services/pin-voter.service";
+import { pinVoteService } from "../../../api/services/pin-voter.service";
 
 type PinButtonsProps = {
   upvotes: number;

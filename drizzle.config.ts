@@ -4,8 +4,8 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 export default {
-  schema: "./src/database/tables/index.ts",
-  out: "./src/database/migrations",
+  schema: "./src/api/database/tables/index.ts",
+  out: "./src/api/database/migrations",
   driver: "turso",
   dialect: "sqlite",
   dbCredentials: {

@@ -7,16 +7,16 @@ import {
   time,
   userMention,
 } from "discord.js";
-import { pinAttachmentService } from "../services/pin-attachment.service";
+import { pinAttachmentService } from "../../api/services/pin-attachment.service";
 
-import logger from "../config/logger";
-import { guildService } from "../services/guild.service";
-import GuildChannelError from "../errors/guild-channel.error";
-import ApiError from "../errors/api-error.error";
-import { pinService } from "../services/pin.service";
-import DuplicatePinError from "../errors/duplicate-pin.error";
-import PinChannelNotFoundError from "../errors/pins-channel-not-found.error";
-import { userService } from "../services/user.service";
+import logger from "../../common/logger";
+import { guildService } from "../../api/services/guild.service";
+import GuildChannelError from "../../errors/guild-channel.error";
+import ApiError from "../../errors/api-error.error";
+import { pinService } from "../../api/services/pin.service";
+import DuplicatePinError from "../../errors/duplicate-pin.error";
+import PinChannelNotFoundError from "../../errors/pins-channel-not-found.error";
+import { userService } from "../../api/services/user.service";
 
 function pinButtons() {
   const upvoteButton = new ButtonBuilder()

@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 
-import { guildService } from "../services/guild.service";
+import { guildService } from "../api/services/guild.service";
 
 dotenv.config();
 

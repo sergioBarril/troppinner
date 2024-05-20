@@ -5,7 +5,7 @@ import {
 } from "discord.js";
 import { Command } from "../../interfaces/command";
 import { handlePinMessage } from "../../utils/pin.util";
-import logger from "../../config/logger";
+import logger from "../../../common/logger";
 
 const data = new SlashCommandBuilder()
   .setName("import")

@@ -2,7 +2,7 @@ import { Collection, GatewayIntentBits } from "discord.js";
 import CustomClient from "./config/custom-client";
 import "dotenv/config";
 import { Command } from "./interfaces/command";
-import logger from "./config/logger";
+import logger from "../common/logger";
 import {
   loadButtons,
   loadCommands,

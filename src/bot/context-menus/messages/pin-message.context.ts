@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import { ContextMenu } from "../../interfaces/context-menu";
 import { handlePinMessage } from "../../utils/pin.util";
-import logger from "../../config/logger";
+import logger from "../../../common/logger";
 
 const data = new ContextMenuCommandBuilder()
   .setName("Pin Message")
